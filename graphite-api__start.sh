@@ -7,7 +7,7 @@
 ##  - [http://uwsgi-docs.readthedocs.io/en/latest/tutorials/Django_and_nginx.html#basic-uwsgi-installation-and-configuration]
 
 
-GRAPHITE_API_YAML="/usr/local/etc/graphite-api.yaml"
+GRAPHITE_API_CONFIG="/usr/local/etc/graphite-api.yaml"
 GRAPHITE_API_WSGI="/usr/local/etc/graphite-api.wsgi"
 
 GAPI_PORT=8001
@@ -18,9 +18,9 @@ UWSGI_DAEMONIZE="--daemonize"
 
 check_graphiteapi_yaml() {
 
-  if [[ ! -f ${GRAPHITE_API_YAML} ]] ; then
+  if [[ ! -f ${GRAPHITE_API_CONFIG} ]] ; then
 
-    cat <<CONFIG > ${GRAPHITE_API_YAML}
+    cat <<CONFIG > ${GRAPHITE_API_CONFIG}
 ---
 ## [https://graphite-api.readthedocs.io/en/latest/configuration.html#default-values]
 search_index: /opt/graphite/index
@@ -44,14 +44,17 @@ check_uwsgi_ini() {
   ## virtualenv's need this:
   #home = /var/www/wsgi-scripts/env
 
-  if [[ ! -f ${GRAPHITE_API_YAML} ]] ; then
+  if [[ ! -f ${GRAPHITE_API_CONFIG} ]] ; then
 
     cat <<CONFIG > ${GRAPHITE_API_WSGI}
 [uwsgi]
 processes = 2
 http-socket = localhost:8001
-plugins = python27
+uid = 165
+gid = 165
 module = graphite_api.app:app
+daemonize2 = /var/log/uwsgi-graphiteapi.log
+env = GRAPHITE_API_CONFIG=${GRAPHITE_API_CONFIG}
 CONFIG
 
   fi
@@ -59,8 +62,5 @@ CONFIG
 
 
 # do start Graphite-API under uWSGI 
-GRAPHITE_API_CONFIG=${GRAPHITE_API_YAML} \
-  uwsgi --ini ${GRAPHITE_API_WSGI}
-
-  #uwsgi --http :${GAPI_PORT} -w graphite_api.app:app ${UWSGI_OPTS}
+uwsgi --ini ${GRAPHITE_API_WSGI}
 
