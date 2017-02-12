@@ -1,0 +1,13 @@
+# On FreeBSD, this file is placed in /usr/local/etc/graphite-api.yaml
+---
+## [https://graphite-api.readthedocs.io/en/latest/configuration.html#default-values]
+search_index: /opt/graphite/index
+finders:
+  - graphite_api.finders.whisper.WhisperFinder
+functions:
+  - graphite_api.functions.SeriesFunctions
+  - graphite_api.functions.PieFunctions
+whisper:
+  directories:
+    - /opt/graphite/carbon/whisper
+time_zone: UTC
